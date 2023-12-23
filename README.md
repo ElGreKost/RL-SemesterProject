@@ -99,6 +99,3 @@ The experimental results were as follows:
 *N-step DQN Results*
 
 The N-step Q learning algorithms surpassed the performance of the single-step DQN and DDQN algorithms. However, more efficient algorithms can be implemented and combined with n-step to provide better results, like Prioritized Experience Replay, Dueling network architecture, noisy nets, distributional Q-learning, and many more.
-
-You can find the code analytically implemented and commented in my GitHub repository:
-[RL-SemesterProject](https://github.com/ElGreKost/RL-SemesterProject.git)
