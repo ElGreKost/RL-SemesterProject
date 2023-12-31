@@ -5,12 +5,13 @@ import random
 from torch.optim import Adam
 from torch import nn
 from Algorithms.common.replay_buffers import ReplayBuffer
-from .DQN import DQN
+from Algorithms.Agents.DQN import DQN
 
 
 class BaseAgent:
 
-    def __init__(self, _env: gym.envs, use_conv=True, _lr=3e-4, _gamma=0.99, _buffer_size=10000, _batch_size=64):
+    def __init__(self, _env: gym.envs, use_conv=True, _lr=3e-4, _gamma=0.99,
+                 _buffer_size=10000, _batch_size=64, _model_path='best_model.pth', eval_mode=False):
         self.env = _env
         self.lr = _lr
         self.gamma = _gamma
@@ -18,8 +19,11 @@ class BaseAgent:
         self.epsilon_decay = 0.995
         self.epsilon_min = 0.01
         self.replay_buffer = ReplayBuffer(_buffer_size)
+        self.model_path = _model_path
+        self.eval_mode = eval_mode
         self.batch_size = _batch_size
         self.frame = 0
+
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -34,7 +38,7 @@ class BaseAgent:
         _action = torch.argmax(qvals).item()
         self.epsilon = max(self.epsilon_min, self.epsilon_decay * self.epsilon)
 
-        return self.env.action_space.sample() if random.random() < self.epsilon else _action
+        return self.env.action_space.sample() if random.random() < self.epsilon and not self.eval_mode else _action
 
     def compute_loss(self, _batch):
         states, actions, rewards, next_states, terms, truncs = zip(*_batch)
@@ -58,3 +62,9 @@ class BaseAgent:
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
+
+    def load(self, model_path=None):
+        if model_path is None:
+            model_path = self.model_path
+        self.net.load_state_dict(torch.load(model_path))
+
