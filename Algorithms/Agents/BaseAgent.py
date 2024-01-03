@@ -23,6 +23,8 @@ class BaseAgent:
         self.eval_mode = eval_mode
         self.batch_size = _batch_size
         self.frame = 0
+        self.learn_start = self.batch_size
+        self.update_freq = 1
 
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -55,7 +57,17 @@ class BaseAgent:
         loss = self.MSE_loss(Q_expected, Q_target)
         return loss
 
+    def append_to_replay(self, s, a, r, s_, te, tr):
+        """
+        Virtual Function:
+        Used and implemented in the child class that has multistep learning"""
+        pass
+
     def update(self, *args):
+        self.frame += 1
+        self.append_to_replay(*args)
+        if self.frame < self.learn_start or self.frame % self.update_freq != 0:
+            return None
         batch = self.replay_buffer.sample(self.batch_size)
         loss = self.compute_loss(batch)
 
